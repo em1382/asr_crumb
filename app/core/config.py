@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +15,29 @@ class Settings(BaseSettings):
         default="postgresql+psycopg://crumb:crumb@127.0.0.1:5432/crumb",
         validation_alias=AliasChoices("DATABASE_URL", "database_url"),
     )
+    cors_allowed_origins: str = Field(
+        validation_alias=AliasChoices(
+            "CORS_ALLOWED_ORIGINS", "cors_allowed_origins"
+        ),
+    )
+
+    @field_validator("cors_allowed_origins", mode="after")
+    @classmethod
+    def cors_origins_not_empty(cls, v: str) -> str:
+        if not [s.strip() for s in v.split(",") if s.strip()]:
+            raise ValueError(
+                "CORS_ALLOWED_ORIGINS must list at least one origin (comma-separated)"
+            )
+        return v
+
+    @computed_field
+    @property
+    def cors_allowed_origin_list(self) -> list[str]:
+        return [
+            s.strip()
+            for s in self.cors_allowed_origins.split(",")
+            if s.strip()
+        ]
 
     model_config = SettingsConfigDict(
         env_file=".env",
