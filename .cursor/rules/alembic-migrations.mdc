@@ -1,0 +1,15 @@
+---
+description: Do not hand-edit Alembic; add new migrations instead of changing old ones
+alwaysApply: true
+---
+
+# Alembic migrations
+
+- **Do not manually edit** anything under the `alembic/` directory (including `versions/`, `env.py`, `script.py.mako`, and generated revisions).
+- **Never change a migration** after it has been created. Treat each revision file as immutable once it exists.
+- **If the database shape or a past migration is wrong**, fix it by **creating a new migration** (e.g. `alembic revision --autogenerate` or a new `alembic revision` with empty message and hand-written `upgrade`/`downgrade`), not by editing an older revision.
+
+```text
+❌ BAD: Edit `alembic/versions/20240101_abc.py` to fix a typo or adjust columns.
+✅ GOOD: Create `alembic revision ...` and put the correction in the new revision only.
+```
