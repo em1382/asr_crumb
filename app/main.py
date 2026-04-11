@@ -2,19 +2,24 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from app.core.config import get_settings
+
+from app.api.main import api_router
+import app.core.config as config
 
 import app.agent as agent
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings = get_settings()
+    # Cannot use DI here because it's not a FastAPI dependency
+    settings = config.get_settings()
     agent.configure(settings)
     yield
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(api_router, prefix=config.get_settings().api_v1_str)
 
 
 @app.websocket("/ingest")
@@ -30,12 +35,7 @@ async def websocket_json(websocket: WebSocket):
 
 @app.get("/")
 async def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
+    return {"status": "200 OK"}
 
 
 @app.post("/recipe")

@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "All-Seeding Rye"
+    api_v1_str: str
     google_api_key: str | None = Field(
         default=None,
         validation_alias=AliasChoices("GOOGLE_API_KEY", "google_api_key"),
