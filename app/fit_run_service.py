@@ -9,7 +9,6 @@ from app.models import (
     FitRecommendation,
     FitRun,
     FitStatus,
-    RecommendationSeverity,
     Recipe,
     RecipePublic,
 )
@@ -68,7 +67,6 @@ def execute_agent_fit_run(fit_run_id: int) -> None:
             session.add(
                 FitRecommendation(
                     fit_run_id=fit_run_id,
-                    severity=RecommendationSeverity.error,
                     message=err_msg,
                 )
             )
