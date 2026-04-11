@@ -19,5 +19,5 @@ services:
       # Comma-separated origins, e.g. https://app.example.com,https://crumb.onrender.com
       - key: CORS_ALLOWED_ORIGINS
         sync: false
-      - key: RECIPE_CREATE_API_KEY
+      - key: CRUMB_API_KEY
         sync: false

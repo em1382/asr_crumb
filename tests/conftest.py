@@ -2,6 +2,14 @@
 
 from __future__ import annotations
 
+import os
+
+# `app.core.db` builds the engine at import time; satisfy Settings before any `app` import.
+os.environ.setdefault("API_V1_STR", "/api/v1")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://test.local")
+os.environ.setdefault("CRUMB_API_KEY", "test-secret-key")
+os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://test:test@127.0.0.1:5432/test")
+
 from collections.abc import Callable, Generator
 from unittest.mock import MagicMock
 
@@ -33,7 +41,7 @@ def reset_settings_cache() -> Generator[None, None, None]:
 def _test_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("API_V1_STR", "/api/v1")
     monkeypatch.setenv("CORS_ALLOWED_ORIGINS", "http://test.local")
-    monkeypatch.setenv("RECIPE_CREATE_API_KEY", "test-secret-key")
+    monkeypatch.setenv("CRUMB_API_KEY", "test-secret-key")
     monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://test:test@127.0.0.1:5432/test")
     get_settings.cache_clear()
 

@@ -21,7 +21,7 @@ def test_configure_raises_when_google_api_key_missing() -> None:
     settings = Settings(
         api_v1_str="/api/v1",
         cors_allowed_origins="http://localhost",
-        recipe_create_api_key="k",
+        api_key="k",
         google_api_key=None,
     )
     with pytest.raises(RuntimeError, match="GOOGLE_API_KEY"):

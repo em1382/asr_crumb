@@ -84,6 +84,16 @@ def test_get_recipe_by_id_found(
     assert res.json()["id"] == 2
 
 
+def test_delete_recipe_requires_x_api_key(
+    client: TestClient,
+    override_get_db,
+) -> None:
+    session = MagicMock()
+    override_get_db(session)
+    res = client.delete("/api/v1/recipes/1")
+    assert res.status_code == 401
+
+
 def test_delete_recipe_not_found(
     client: TestClient,
     override_get_db,
@@ -91,7 +101,10 @@ def test_delete_recipe_not_found(
     session = MagicMock()
     session.get.return_value = None
     override_get_db(session)
-    res = client.delete("/api/v1/recipes/1")
+    res = client.delete(
+        "/api/v1/recipes/1",
+        headers={"X-API-Key": "test-secret-key"},
+    )
     assert res.status_code == 404
 
 

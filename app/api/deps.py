@@ -9,7 +9,7 @@ from sqlmodel import Session
 from app.core.config import get_settings
 from app.core.db import engine
 
-_recipe_create_api_key_header = APIKeyHeader(name="X-API-Key")
+_api_key_header = APIKeyHeader(name="X-API-Key")
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -17,10 +17,10 @@ def get_db() -> Generator[Session, None, None]:
         yield session
 
 
-def verify_recipe_create_api_key(
-    api_key: Annotated[str, Security(_recipe_create_api_key_header)],
+def verify_api_key(
+    api_key: Annotated[str, Security(_api_key_header)],
 ) -> None:
-    expected = get_settings().recipe_create_api_key
+    expected = get_settings().api_key
     try:
         if not secrets.compare_digest(api_key, expected):
             raise HTTPException(
@@ -35,4 +35,4 @@ def verify_recipe_create_api_key(
 
 
 SessionDep = Annotated[Session, Depends(get_db)]
-RecipeCreateAuthDep = Annotated[None, Depends(verify_recipe_create_api_key)]
+ApiKeyAuthDep = Annotated[None, Depends(verify_api_key)]
