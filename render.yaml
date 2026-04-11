@@ -1,0 +1,21 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Set DATABASE_URL to your Neon connection string (dashboard: sync: false on first create).
+# Use a URL SQLAlchemy accepts with psycopg3, e.g. postgresql+psycopg://user:pass@host/db?sslmode=require
+
+services:
+  - type: web
+    name: crumb
+    runtime: python
+    region: virginia
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    preDeployCommand: alembic upgrade head
+    startCommand: fastapi run
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: API_V1_STR
+        value: /api/v1
+      # Comma-separated origins, e.g. https://app.example.com,https://crumb.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
