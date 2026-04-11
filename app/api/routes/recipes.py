@@ -1,9 +1,10 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from sqlmodel import col, func, select
 
 from app.api.deps import SessionDep
+from app.fit_run_service import execute_agent_fit_run
 from app.models import Message, Recipe, RecipeCreate, RecipePublic, RecipesPublic
 
 
@@ -49,7 +50,10 @@ def read_item(session: SessionDep, id: int) -> Any:
 
 @router.post("/", response_model=RecipePublic)
 def create_recipe(
-    *, session: SessionDep, recipe_in: RecipeCreate
+    *,
+    session: SessionDep,
+    recipe_in: RecipeCreate,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Creates a new recipe if it doesn't already exist.
@@ -70,6 +74,9 @@ def create_recipe(
     session.add(db_obj)
     session.commit()
     session.refresh(db_obj)
+
+    background_tasks.add_task(execute_agent_fit_run, db_obj.id)
+
     return db_obj
 
 

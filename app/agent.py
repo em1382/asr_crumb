@@ -12,6 +12,10 @@ prompt = ChatPromptTemplate.from_messages([
 
 chain = None
 
+# For demo purposes, we'll hardcode the Gemini 2.5 Flash model
+AGENT_MODEL_NAME = "gemini-2.5-flash"
+
+
 def configure(settings: Settings):
     """
     Configure the agent with FastAPI's settings.
@@ -23,7 +27,7 @@ def configure(settings: Settings):
     global chain
 
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model=AGENT_MODEL_NAME,
         temperature=0,
         max_tokens=None,
         timeout=None,
@@ -34,8 +38,10 @@ def configure(settings: Settings):
     chain = prompt | llm
 
 
-def get_recipe_recommendations(recipe: dict) -> list[dict]:
-    """ Get recipe recommendations from the model. """
-    return chain.invoke({
-        "ingredients": json.dumps(recipe["ingredients"])
-    })
+def get_recipe_recommendations(recipe: dict):
+    """Return the LLM response for the recipe (typically an AIMessage)."""
+    if chain is None:
+        raise RuntimeError("Agent is not configured; call configure() during app startup.")
+    return chain.invoke(
+        {"ingredients": json.dumps(recipe["ingredients"])}
+    )
