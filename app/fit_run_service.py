@@ -1,6 +1,7 @@
 """Create pending fit runs synchronously; complete agent work in the background."""
 
-from sqlmodel import Session
+from sqlalchemy import func
+from sqlmodel import Session, select
 
 from app.agent import AGENT_MODEL_NAME, get_recipe_recommendations
 from app.core.db import engine
@@ -16,8 +17,13 @@ from app.models import (
 
 def create_pending_fit_run(session: Session, recipe_id: int) -> FitRun:
     """Insert a `FitRun` in `pending` (call before commit)."""
+    max_seq = session.exec(
+        select(func.max(FitRun.run_sequence)).where(FitRun.recipe_id == recipe_id)
+    ).first()
+    next_seq = (max_seq or 0) + 1
     row = FitRun(
         recipe_id=recipe_id,
+        run_sequence=next_seq,
         agent_model=AGENT_MODEL_NAME,
         status=FitStatus.pending,
     )

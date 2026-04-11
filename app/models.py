@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field as PydanticField
-from sqlalchemy import Column, Enum as SAEnum
+from sqlalchemy import Column, Enum as SAEnum, UniqueConstraint
 from sqlmodel import Field, DateTime, JSON, SQLModel
 
 
@@ -92,6 +92,7 @@ class FitRunBase(SQLModel):
     """
 
     recipe_id: int = Field(foreign_key="recipe.id", index=True)
+    run_sequence: int
     agent_model: str | None = None
     status: FitStatus = Field(
         sa_column=Column(
@@ -111,6 +112,13 @@ class FitRun(FitRunBase, table=True):
     """One agent/fit pass for a recipe (e.g. recommendations toward fit-to-standard)."""
 
     __tablename__ = "fit_run"
+    __table_args__ = (
+        UniqueConstraint(
+            "recipe_id",
+            "run_sequence",
+            name="uq_fit_run_recipe_run_sequence",
+        ),
+    )
 
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
