@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from sqlmodel import col, func, select
 
-from app.api.deps import SessionDep
+from app.api.deps import RecipeCreateAuthDep, SessionDep
 from app.fit_run_service import create_pending_fit_run, execute_agent_fit_run
 from app.models import (
     FitRecommendation,
@@ -63,6 +63,7 @@ def read_recipe(session: SessionDep, id: int) -> Any:
 @router.post("/", response_model=RecipePublic)
 def create_recipe(
     *,
+    _: RecipeCreateAuthDep,
     session: SessionDep,
     recipe_in: RecipeCreate,
     background_tasks: BackgroundTasks,

@@ -20,6 +20,11 @@ class Settings(BaseSettings):
             "CORS_ALLOWED_ORIGINS", "cors_allowed_origins"
         ),
     )
+    recipe_create_api_key: str = Field(
+        validation_alias=AliasChoices(
+            "RECIPE_CREATE_API_KEY", "recipe_create_api_key"
+        ),
+    )
 
     @field_validator("cors_allowed_origins", mode="after")
     @classmethod
