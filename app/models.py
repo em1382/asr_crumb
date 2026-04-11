@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict, Field as PydanticField
 from sqlalchemy import Column, Enum as SAEnum
 from sqlmodel import Field, DateTime, JSON, SQLModel
 
@@ -85,17 +85,13 @@ class Message(SQLModel):
     message: str
 
 
-class FitRun(SQLModel, table=True):
-    """One agent/fit pass for a recipe (e.g. recommendations toward fit-to-standard)."""
+class FitRunBase(SQLModel):
+    """
+    Shared scalar fields for the persisted `FitRun` row and API schemas
+    (e.g. `FitRunPublic`). Subclass with `table=True` for the ORM model.
+    """
 
-    __tablename__ = "fit_run"
-
-    id: int | None = Field(default=None, primary_key=True)
     recipe_id: int = Field(foreign_key="recipe.id", index=True)
-    created_at: datetime = Field(
-        default_factory=_utcnow,
-        sa_type=DateTime(timezone=True),  # type: ignore[arg-type]
-    )
     agent_model: str | None = None
     status: FitStatus = Field(
         sa_column=Column(
@@ -109,24 +105,45 @@ class FitRun(SQLModel, table=True):
             nullable=False,
         )
     )
-    summary: str | None = None
-    violations: list[Any] | dict[str, Any] | None = Field(
-        default=None,
-        sa_column=Column(JSON, nullable=True),
-    )
-    normalized_recipe: dict[str, Any] | list[Any] | None = Field(
-        default=None,
-        sa_column=Column(JSON, nullable=True),
-    )
 
 
-class FitRecommendation(SQLModel, table=True):
-    """Structured recommendation line items for a fit run."""
+class FitRun(FitRunBase, table=True):
+    """One agent/fit pass for a recipe (e.g. recommendations toward fit-to-standard)."""
 
-    __tablename__ = "fit_recommendation"
+    __tablename__ = "fit_run"
 
     id: int | None = Field(default=None, primary_key=True)
-    fit_run_id: int = Field(foreign_key="fit_run.id", index=True)
+    created_at: datetime = Field(
+        default_factory=_utcnow,
+        sa_type=DateTime(timezone=True),  # type: ignore[arg-type]
+    )
+
+
+class FitRecommendationAgentOutput(BaseModel):
+    """
+    Pydantic schema for LangChain structured LLM output. Matches the agent-filled
+    columns on `fit_recommendation` (severity, message, reasoning, recommendations).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    severity: RecommendationSeverity
+    message: str
+    reasoning: str | None = None
+    recommendations: list[str] | None = PydanticField(
+        default=None,
+        description=(
+            "List of plain-text sentences (each item one string). "
+            "Not nested JSON or key-value objects."
+        ),
+    )
+
+
+class FitRecommendationBase(SQLModel):
+    """
+    Shared fields for `FitRecommendation` rows and `FitRecommendationPublic`.
+    """
+
     severity: RecommendationSeverity = Field(
         sa_column=Column(
             SAEnum(
@@ -141,38 +158,37 @@ class FitRecommendation(SQLModel, table=True):
     )
     message: str
     reasoning: str | None = None
-    suggested_change: dict[str, Any] | list[Any] | None = Field(
+    recommendations: list[str] | None = Field(
         default=None,
         sa_column=Column(JSON, nullable=True),
     )
 
 
-class FitRecommendationPublic(SQLModel):
+class FitRecommendation(FitRecommendationBase, table=True):
+    """Structured recommendation line items for a fit run."""
+
+    __tablename__ = "fit_recommendation"
+
+    id: int | None = Field(default=None, primary_key=True)
+    fit_run_id: int = Field(foreign_key="fit_run.id", index=True)
+
+
+class FitRecommendationPublic(FitRecommendationBase):
     """API shape for a stored recommendation (agent output lives here)."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     fit_run_id: int
-    severity: RecommendationSeverity
-    message: str
-    reasoning: str | None = None
-    suggested_change: dict[str, Any] | list[Any] | None = None
 
 
-class FitRunPublic(SQLModel):
+class FitRunPublic(FitRunBase):
     """API shape for a fit run row (poll until status leaves `pending`)."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    recipe_id: int
     created_at: datetime
-    agent_model: str | None
-    status: FitStatus
-    summary: str | None
-    violations: list[Any] | dict[str, Any] | None
-    normalized_recipe: dict[str, Any] | list[Any] | None
 
 
 class FitRunWithRecommendationsPublic(FitRunPublic):

@@ -14,15 +14,6 @@ from app.models import (
 )
 
 
-def _message_content(result: object) -> str:
-    content = getattr(result, "content", None)
-    if content is not None:
-        if isinstance(content, str):
-            return content
-        return str(content)
-    return str(result)
-
-
 def create_pending_fit_run(session: Session, recipe_id: int) -> FitRun:
     """Insert a `FitRun` in `pending` (call before commit)."""
     row = FitRun(
@@ -55,19 +46,18 @@ def execute_agent_fit_run(fit_run_id: int) -> None:
         recipe_dict = RecipePublic.model_validate(recipe).model_dump()
         try:
             result = get_recipe_recommendations(recipe_dict)
-            text = _message_content(result)
             fit_run.status = FitStatus.needs_review
-            fit_run.summary = None
             session.add(
                 FitRecommendation(
                     fit_run_id=fit_run_id,
-                    severity=RecommendationSeverity.info,
-                    message=text,
+                    severity=result.severity,
+                    message=result.message,
+                    reasoning=result.reasoning,
+                    recommendations=result.recommendations,
                 )
             )
         except Exception as exc:  # noqa: BLE001 — persist failure for observability
             fit_run.status = FitStatus.failed
-            fit_run.summary = None
             err_msg = str(exc)
             session.add(
                 FitRecommendation(

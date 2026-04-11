@@ -1,13 +1,29 @@
+from pathlib import Path
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
+
 from app.core.config import Settings
+from app.models import FitRecommendationAgentOutput
 
 import json
 
 
+_SYSTEM_PROMPT_PATH = Path(__file__).resolve().parent.parent / "system_prompt.txt"
+
+
+def _escape_langchain_literal_braces(text: str) -> str:
+    """LangChain templates treat {var} as placeholders; double braces for literal { }."""
+    return text.replace("{", "{{").replace("}", "}}")
+
+
+_SYSTEM_PROMPT = _escape_langchain_literal_braces(
+    _SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
+)
+
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You not say many words. No personality. Good baker. You read JSON containing bread ingredients. You tell me bread good or bread bad based on type of bread. If bread bad, you tell how fix."),
-    ("human", "{ingredients}"),
+    ("system", _SYSTEM_PROMPT),
+    ("human", "{ingredients} {bread_type}"),
 ])
 
 chain = None
@@ -35,13 +51,14 @@ def configure(settings: Settings):
         api_key=api_key,
     )
 
-    chain = prompt | llm
+    structured_llm = llm.with_structured_output(FitRecommendationAgentOutput)
+    chain = prompt | structured_llm
 
 
-def get_recipe_recommendations(recipe: dict):
-    """Return the LLM response for the recipe (typically an AIMessage)."""
+def get_recipe_recommendations(recipe: dict) -> FitRecommendationAgentOutput:
+    """Return structured output aligned with `fit_recommendation` table fields."""
     if chain is None:
         raise RuntimeError("Agent is not configured; call configure() during app startup.")
     return chain.invoke(
-        {"ingredients": json.dumps(recipe["ingredients"])}
+        {"ingredients": json.dumps(recipe["ingredients"]), "bread_type": recipe["recipe_name"]}
     )
