@@ -14,6 +14,7 @@ def _utcnow() -> datetime:
 
 
 class FitStatus(str, Enum):
+    pending = "pending"
     passed = "passed"
     failed = "failed"
     needs_review = "needs_review"
@@ -144,3 +145,41 @@ class FitRecommendation(SQLModel, table=True):
         default=None,
         sa_column=Column(JSON, nullable=True),
     )
+
+
+class FitRecommendationPublic(SQLModel):
+    """API shape for a stored recommendation (agent output lives here)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    fit_run_id: int
+    severity: RecommendationSeverity
+    message: str
+    reasoning: str | None = None
+    suggested_change: dict[str, Any] | list[Any] | None = None
+
+
+class FitRunPublic(SQLModel):
+    """API shape for a fit run row (poll until status leaves `pending`)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    recipe_id: int
+    created_at: datetime
+    agent_model: str | None
+    status: FitStatus
+    summary: str | None
+    violations: list[Any] | dict[str, Any] | None
+    normalized_recipe: dict[str, Any] | list[Any] | None
+
+
+class FitRunWithRecommendationsPublic(FitRunPublic):
+    """Fit run with recommendation rows for list/detail views."""
+
+    recommendations: list[FitRecommendationPublic]
+
+
+class FitRunsForRecipePublic(SQLModel):
+    data: list[FitRunWithRecommendationsPublic]

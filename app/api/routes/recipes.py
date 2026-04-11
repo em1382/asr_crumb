@@ -4,8 +4,20 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from sqlmodel import col, func, select
 
 from app.api.deps import SessionDep
-from app.fit_run_service import execute_agent_fit_run
-from app.models import Message, Recipe, RecipeCreate, RecipePublic, RecipesPublic
+from app.fit_run_service import create_pending_fit_run, execute_agent_fit_run
+from app.models import (
+    FitRecommendation,
+    FitRecommendationPublic,
+    FitRun,
+    FitRunPublic,
+    FitRunsForRecipePublic,
+    FitRunWithRecommendationsPublic,
+    Message,
+    Recipe,
+    RecipeCreate,
+    RecipePublic,
+    RecipesPublic,
+)
 
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
@@ -38,7 +50,7 @@ def read_recipes(
 
 
 @router.get("/{id}", response_model=RecipePublic)
-def read_item(session: SessionDep, id: int) -> Any:
+def read_recipe(session: SessionDep, id: int) -> Any:
     """
     Gets a Recipe by ID.
     """
@@ -72,10 +84,13 @@ def create_recipe(
 
     db_obj = Recipe.model_validate(recipe_in)
     session.add(db_obj)
+    session.flush()
+
+    fit_run = create_pending_fit_run(session, db_obj.id)
     session.commit()
     session.refresh(db_obj)
 
-    background_tasks.add_task(execute_agent_fit_run, db_obj.id)
+    background_tasks.add_task(execute_agent_fit_run, fit_run.id)
 
     return db_obj
 
@@ -93,3 +108,35 @@ def delete_item(
     session.delete(recipe)
     session.commit()
     return Message(message=f"Recipe {recipe.batch_id!r} deleted successfully")
+
+
+@router.get("/{recipe_id}/fit-runs", response_model=FitRunsForRecipePublic)
+def list_recipe_fit_runs(session: SessionDep, recipe_id: int) -> Any:
+    """
+    Fit runs for a recipe (new runs start as `pending`, then fill with recommendations).
+    """
+    recipe = session.get(Recipe, recipe_id)
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    runs = session.exec(
+        select(FitRun)
+        .where(FitRun.recipe_id == recipe_id)
+        .order_by(col(FitRun.created_at).desc())
+    ).all()
+
+    data: list[FitRunWithRecommendationsPublic] = []
+    for run in runs:
+        recs = session.exec(
+            select(FitRecommendation).where(FitRecommendation.fit_run_id == run.id)
+        ).all()
+        base = FitRunPublic.model_validate(run)
+        data.append(
+            FitRunWithRecommendationsPublic(
+                **base.model_dump(),
+                recommendations=[
+                    FitRecommendationPublic.model_validate(r) for r in recs
+                ],
+            )
+        )
+    return FitRunsForRecipePublic(data=data)
