@@ -31,6 +31,6 @@ app.include_router(api_router, prefix=settings.api_v1_str)
 
 
 @app.get("/")
-async def read_root():
+def read_root():
     """Root endpoint."""
     return {"status": "200 OK"}
