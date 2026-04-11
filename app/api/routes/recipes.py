@@ -97,7 +97,7 @@ def create_recipe(
 
 
 @router.delete("/{id}")
-def delete_item(
+def delete_recipe(
     session: SessionDep, id: int
 ) -> Message:
     """
