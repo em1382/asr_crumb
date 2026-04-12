@@ -2,7 +2,6 @@ name: Pull request opened into main branch
 
 on:
   pull_request:
-  push:
     branches: [main]
 
 jobs:
