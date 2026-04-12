@@ -1,5 +1,7 @@
 """Create pending fit runs synchronously; complete agent work in the background."""
 
+import logging
+
 from sqlalchemy import func
 from sqlmodel import Session, select
 
@@ -12,6 +14,8 @@ from app.models import (
     Recipe,
     RecipePublic,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def create_pending_fit_run(session: Session, recipe_id: int) -> FitRun:
@@ -34,8 +38,9 @@ def create_pending_fit_run(session: Session, recipe_id: int) -> FitRun:
 
 def execute_agent_fit_run(fit_run_id: int) -> None:
     """
-    Load the fit run and recipe, run the LLM, then update the run and attach
-    the narrative as a `FitRecommendation`.
+    Load the fit run and recipe, run the LLM, then set status to `needs_review`
+    and persist a `FitRecommendation`. On failure, set `failed`, log the error,
+    and do not create a recommendation row.
     """
     with Session(engine) as session:
         fit_run = session.get(FitRun, fit_run_id)
@@ -61,14 +66,8 @@ def execute_agent_fit_run(fit_run_id: int) -> None:
                     recommendations=result.recommendations,
                 )
             )
-        except Exception as exc:  # noqa: BLE001 — persist failure for observability
+        except Exception:
+            logger.exception("Agent fit run failed (fit_run_id=%s)", fit_run_id)
             fit_run.status = FitStatus.failed
-            err_msg = str(exc)
-            session.add(
-                FitRecommendation(
-                    fit_run_id=fit_run_id,
-                    message=err_msg,
-                )
-            )
 
         session.commit()

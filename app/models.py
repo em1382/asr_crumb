@@ -150,8 +150,6 @@ class FitRecommendationAgentOutput(BaseModel):
 class FitRecommendationBase(SQLModel):
     """
     Shared fields for `FitRecommendation` rows and `FitRecommendationPublic`.
-
-    `severity` is null when the row records an infra failure (no agent output).
     """
 
     severity: RecommendationSeverity | None = Field(

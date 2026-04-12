@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -5,8 +6,6 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from app.core.config import Settings
 from app.models import FitRecommendationAgentOutput
-
-import json
 
 
 _SYSTEM_PROMPT_PATH = Path(__file__).resolve().parent.parent / "system_prompt.txt"
@@ -60,5 +59,8 @@ def get_recipe_recommendations(recipe: dict) -> FitRecommendationAgentOutput:
     if chain is None:
         raise RuntimeError("Agent is not configured; call configure() during app startup.")
     return chain.invoke(
-        {"ingredients": json.dumps(recipe["ingredients"]), "bread_type": recipe["recipe_name"]}
+        {
+            "ingredients": json.dumps(recipe["ingredients"]),
+            "bread_type": recipe["recipe_name"],
+        }
     )
