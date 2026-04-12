@@ -9,16 +9,7 @@ from app.models import FitRecommendationAgentOutput
 
 
 _SYSTEM_PROMPT_PATH = Path(__file__).resolve().parent.parent / "system_prompt.txt"
-
-
-def _escape_langchain_literal_braces(text: str) -> str:
-    """LangChain templates treat {var} as placeholders; double braces for literal { }."""
-    return text.replace("{", "{{").replace("}", "}}")
-
-
-_SYSTEM_PROMPT = _escape_langchain_literal_braces(
-    _SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
-)
+_SYSTEM_PROMPT = _SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
 
 prompt = ChatPromptTemplate.from_messages([
     ("system", _SYSTEM_PROMPT),

@@ -12,11 +12,6 @@ from app.core.config import Settings
 from app.models import FitRecommendationAgentOutput, RecommendationSeverity
 
 
-def test_escape_langchain_literal_braces() -> None:
-    assert agent._escape_langchain_literal_braces("a{b}c") == "a{{b}}c"
-    assert agent._escape_langchain_literal_braces("{}") == "{{}}"
-
-
 def test_configure_raises_when_google_api_key_missing() -> None:
     settings = Settings(
         api_v1_str="/api/v1",
