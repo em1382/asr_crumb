@@ -30,7 +30,7 @@ app.add_middleware(
 app.include_router(api_router, prefix=settings.api_v1_str)
 
 
-@app.get("/")
-def read_root():
-    """Root endpoint."""
-    return {"status": "200 OK"}
+@app.get("/health")
+def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy"}
