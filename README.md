@@ -4,8 +4,6 @@ Crumb is the back-end of a refresher project I built in preparation for intervie
 
 It's intended to be a light-hearted toy "fit-to-standard" project that ingests bread ingredients and passes them to a model (for now, only Gemini Flash 2.5) for review.
 
-Crumb is built with FastAPI, 
-
 #### Quick Note on Front-end
 A sister project, [Crust](https://github.com/em1382/asr_crust), serves as this application's front-end and presentation layer. Once the back-end set-up is complete, I'd suggest heading over there for additional local project setup.
 
@@ -14,12 +12,12 @@ In order to get a local development environment up and running, you'll need to f
 ```bash
 $ python3.14 -m venv .venv
 ```
-Then activate it with
+Then activate it with:
 ```bash
 $ source ./.venv/bin/activate
 ```
 
-Once your virtual environment is set up, you can install dependencies for the project with
+Once your virtual environment is set up, you can install dependencies for the project with:
 ```bash
 $ pip install -r requirements.txt
 ```
@@ -45,7 +43,7 @@ Once requirements are installed, you'll need to configure a few environment vari
 Create a .env file in the root of the project and populate with your values. You can a template in .env.example in the project root.
 
 ### Alembic Migrations
-This project uses [Alembic](https://alembic.sqlalchemy.org/en/latest/) to handle database migrations. After you configure a local database and set the `DATABASE_URL` environment variable, you can run initial migrations using
+This project uses [Alembic](https://alembic.sqlalchemy.org/en/latest/) to handle database migrations. After you configure a local database and set the `DATABASE_URL` environment variable, you can run initial migrations using:
 ```bash
 $ alembic upgrade head
 ```
@@ -53,7 +51,7 @@ $ alembic upgrade head
 This will generate the application's initial schema in your database and is the last step before actually starting the application!
 
 ### Running the Application (Development)
-Once your .env file is populated, you can run the application in development mode with
+Once your .env file is populated, you can run the application in development mode with:
 ```bash
 $ fastapi dev
 ```
@@ -61,7 +59,9 @@ $ fastapi dev
 This will start the development server bundled with FastAPI and start your application by default on port 8000.
 
 ### Using the Application
-In order for Crumb to create recommendations based on your list of ingredients, send an HTTP POST request to http://localhost:8000/api/v1/recipes with the following payload (for interaction with the API, I'd recommend [Postman](https://postman.com)):
+Ingest is API-only at the moment. For interaction with the API, I'd recommend [Postman](https://postman.com).
+
+In order for Crumb to create recommendations based on your list of ingredients, send an HTTP POST request (with an `X-API-Key` header set to `CRUMB_API_KEY`) to http://localhost:8000/api/v1/recipes with the following payload:
 ```json
 {
     "batch_id": "b_1125",
