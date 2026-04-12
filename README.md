@@ -59,7 +59,8 @@ $ fastapi dev
 This will start the development server bundled with FastAPI and start your application by default on port 8000.
 
 ### Using the Application
-Ingest is API-only at the moment. For interaction with the API, I'd recommend [Postman](https://postman.com).
+Ingest is API-only at the moment. The OpenAPI docs for the app can be found at http://localhost:8000/docs.
+For interaction with the API, I'd recommend [Postman](https://postman.com).
 
 In order for Crumb to create recommendations based on your list of ingredients, send an HTTP POST request (with an `X-API-Key` header set to `CRUMB_API_KEY`) to http://localhost:8000/api/v1/recipes with the following payload:
 ```json
@@ -135,3 +136,16 @@ Making a GET request to http://localhost:8000/api/v1/recipes/{id}/fit-runs will 
 ```
 
 As this is a demo application, the API is currently lacking a full featureset. New API endpoints are planned to allow for more intuitive interaction with the API.
+
+### Next Steps
+- Ability to update a recipe and have new recommendations run.
+- Ability to retry failed runs, or run recommendations again for the same recipe.
+- Logging! Would probably opt for a structured logger.
+ - Potentially an integration with Sentry.
+- User accounts, authentication.
+  - Potentially can integrate with Auth0, as they have a free tier.
+- Rate-limiting for APIs.
+- Require auth for all reads.
+- Integration tests.
+- Complete crud for all resources.
+- Architecture diagram in README.
