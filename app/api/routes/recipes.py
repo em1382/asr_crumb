@@ -149,3 +149,4 @@ def list_recipe_fit_runs(session: SessionDep, recipe_id: int) -> Any:
         for run in runs
     ]
     return FitRunsForRecipePublic(data=data)
+    
