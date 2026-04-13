@@ -61,9 +61,11 @@ $ fastapi dev
 This will start the development server bundled with FastAPI and start your application by default on port 8000.
 
 ### Using the Application
-Ingest is API-only at the moment. The OpenAPI docs for the app can be found at http://localhost:8000/docs.
-For interaction with the API, I'd recommend [Postman](https://postman.com).
+Ingest is API-only at the moment. FastAPI serves interactive OpenAPI documentation (Swagger UI) at http://localhost:8000/docs. The quickest way to test out Crumb's functionality is to open this URL in a browser and use "Try it out" to send requests from the page. For endpoints that require authentication, click **Authorize** and enter the same secret as `CRUMB_API_KEY`. Swagger will then attach the `X-API-Key` header on "Try it out" requests.
 
+[Postman](https://postman.com) works well too!
+
+### Creating a Recipe to Obtain Recommendations (Fit-to-Standard)
 In order for Crumb to create recommendations based on your list of ingredients, send an HTTP POST request (with an `X-API-Key` header set to `CRUMB_API_KEY`) to http://localhost:8000/api/v1/recipes with the following payload:
 ```json
 {
