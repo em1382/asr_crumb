@@ -71,7 +71,7 @@ In order for Crumb to create recommendations based on your list of ingredients, 
 {
     "batch_id": "b_1125",
     "recipe_name": "Definitely Not Optimal Artisan Sourdough",
-    "status_expectation": "optimal",
+    "status_expectation": "error",
     "ingredients": [
         {
             "name": "bread_flour",
