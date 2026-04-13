@@ -129,18 +129,23 @@ def list_recipe_fit_runs(session: SessionDep, recipe_id: int) -> Any:
         .order_by(col(FitRun.created_at).desc())
     ).all()
 
-    data: list[FitRunWithRecommendationsPublic] = []
-    for run in runs:
-        recs = session.exec(
-            select(FitRecommendation).where(FitRecommendation.fit_run_id == run.id)
-        ).all()
-        base = FitRunPublic.model_validate(run)
-        data.append(
-            FitRunWithRecommendationsPublic(
-                **base.model_dump(),
-                recommendations=[
-                    FitRecommendationPublic.model_validate(r) for r in recs
-                ],
-            )
+    if not runs:
+        return FitRunsForRecipePublic(data=[])
+
+    run_ids = [run.id for run in runs]
+    all_recs = session.exec(
+        select(FitRecommendation).where(col(FitRecommendation.fit_run_id).in_(run_ids))
+    ).all()
+
+    recs_by_run: dict[int, list[FitRecommendationPublic]] = {run.id: [] for run in runs}
+    for rec in all_recs:
+        recs_by_run[rec.fit_run_id].append(FitRecommendationPublic.model_validate(rec))
+
+    data = [
+        FitRunWithRecommendationsPublic(
+            **FitRunPublic.model_validate(run).model_dump(),
+            recommendations=recs_by_run[run.id],
         )
+        for run in runs
+    ]
     return FitRunsForRecipePublic(data=data)
