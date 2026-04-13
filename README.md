@@ -1,4 +1,4 @@
-## Crumb: the back-end of All Seeding Rye
+## Crumb: the back-end of All-Seeding Rye
 
 Crumb is the back-end of a refresher project I built in preparation for interviews. I wanted to make sure I actually remembered how to work effectively on the back-end after spending a great deal of time in the cloud and on the front-end in my last full-time position.
 
