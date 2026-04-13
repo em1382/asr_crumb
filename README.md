@@ -138,6 +138,7 @@ Making a GET request to http://localhost:8000/api/v1/recipes/{id}/fit-runs will 
 As this is a demo application, the API is currently lacking a full featureset. New API endpoints are planned to allow for more intuitive interaction with the API.
 
 ### Next Steps
+- Fine-tuning for prompt passed to model (the model currently is far too strict).
 - Ability to update a recipe and have new recommendations run.
 - Ability to retry failed runs, or run recommendations again for the same recipe.
 - Logging! Would probably opt for a structured logger.
