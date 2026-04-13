@@ -35,4 +35,4 @@ def verify_api_key(
 
 
 SessionDep = Annotated[Session, Depends(get_db)]
-ApiKeyAuthDep = Annotated[None, Depends(verify_api_key)]
+ApiKeyAuthDep = Annotated[None, Security(verify_api_key)]
