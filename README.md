@@ -4,6 +4,8 @@ Crumb is the back-end of a refresher project I built in preparation for intervie
 
 It's intended to be a light-hearted toy "fit-to-standard" project that ingests bread ingredients and passes them to a model (for now, only Gemini Flash 2.5) for review.
 
+The project proposal for this application can be found [here](https://docs.google.com/document/d/1piazBpKitfWhJgxqDaO3vAHaw_MUYFVNsVBnu0-WlLU/edit?usp=sharing).
+
 #### Quick Note on Front-end
 A sister project, [Crust](https://github.com/em1382/asr_crust), serves as this application's front-end and presentation layer. Once the back-end set-up is complete, I'd suggest heading over there for additional local project setup.
 
